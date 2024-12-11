@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const { checkForAuthenticationCookie } = require('./middlewares/authentication');
 const userRoute = require('./routes/user')
 const {connectToMongoDb} = require("./db/connect")
 
@@ -12,10 +14,13 @@ connectToMongoDb().then(()=>{console.log('MongoDB Connected')}).catch((err)=>{co
 
 app.set('view engine','ejs');
 app.set('views',path.resolve('./views'));
+
 app.use(express.urlencoded({extended:false}));
+app.use(cookieParser());
+app.use(checkForAuthenticationCookie("token"));
 
 app.get('/',(req,res)=>{
-    res.render('home');
+    res.render('home',{user:req.user});
 })
 
 app.use("/user",userRoute);
